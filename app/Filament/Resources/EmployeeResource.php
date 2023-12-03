@@ -7,12 +7,19 @@ use App\Filament\Resources\EmployeeResource\RelationManagers;
 use App\Models\City;
 use App\Models\Employee;
 use App\Models\State;
+use Carbon\Carbon;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -36,7 +43,7 @@ class EmployeeResource extends Resource
                         ->live()
                         ->searchable()
                         ->preload()
-                        ->afterStateUpdated(function (Set $set){
+                        ->afterStateUpdated(function (Set $set) {
                             $set('state_id', null);
                             $set('city_id', null);
                         })
@@ -53,8 +60,8 @@ class EmployeeResource extends Resource
                         ->required(),
                     Forms\Components\Select::make('city_id')->label('City')
                         ->options(fn(Get $get): Collection => City::query()
-                        ->where('state_id', $get('state_id'))
-                        ->pluck('name', 'id')
+                            ->where('state_id', $get('state_id'))
+                            ->pluck('name', 'id')
                         )
                         ->searchable()
                         ->preload()
@@ -148,7 +155,42 @@ class EmployeeResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('Department')
+                    ->label('filter by department')
+                    ->indicator('Department')
+                    ->relationship('department', 'name')
+                    ->searchable()
+                    ->preload()->multiple(),
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('created_from'),
+                        DatePicker::make('created_until'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if ($data['created_from'] ?? null) {
+                            $indicators[] = Indicator::make('Created from ' . Carbon::parse($data['created_from'])->toFormattedDateString())
+                                ->removeField('from');
+                        }
+
+                        if ($data['created_until'] ?? null) {
+                            $indicators[] = Indicator::make('Created until ' . Carbon::parse($data['created_until'])->toFormattedDateString())
+                                ->removeField('until');
+                        }
+
+                        return $indicators;
+                    })
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -159,6 +201,31 @@ class EmployeeResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist->schema([
+            Section::make('Relationship')->schema([
+                TextEntry::make('country.name')->label('Country Name'),
+                TextEntry::make('state.name')->label('State Name'),
+                TextEntry::make('city.name')->label('City Name'),
+                TextEntry::make('department.name')->label('Department Name'),
+            ])->columns(2),
+            Section::make('User Name')->schema([
+                TextEntry::make('first_name'),
+                TextEntry::make('last_name'),
+                TextEntry::make('middle_name'),
+            ])->columns(4),
+            Section::make('User Address')->schema([
+                TextEntry::make('address'),
+                TextEntry::make('zip_code'),
+            ])->columns(2),
+            Section::make('Date')->schema([
+                TextEntry::make('date_of_birth')->date('d/m/Y'),
+                TextEntry::make('date_hired')->date('d/m/Y'),
+            ])->columns(2),
+        ]);
     }
 
     public static function getRelations(): array
