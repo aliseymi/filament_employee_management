@@ -2,9 +2,11 @@
 
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\VerifyIsAdmin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -23,11 +25,9 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
             ->id('admin')
             ->path('admin')
             ->login()
-            ->registration()->profile()->passwordReset()->emailVerification()
             ->colors([
                 'danger' => Color::Red,
                 'gray' => Color::Slate,
@@ -40,6 +40,12 @@ class AdminPanelProvider extends PanelProvider
                 'Employee Management',
                 'System Management',
                 'User Management'
+            ])
+            ->userMenuItems([
+                MenuItem::make()
+                ->label('Dashboard')
+                ->icon('heroicon-o-cog-6-tooth')
+                ->url('/app')
             ])
             ->brandLogo(asset('images/logo.png'))->brandLogoHeight('2rem')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
@@ -62,9 +68,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-            ])
-            ->authMiddleware([
-                Authenticate::class,
+                VerifyIsAdmin::class
             ]);
     }
 }
