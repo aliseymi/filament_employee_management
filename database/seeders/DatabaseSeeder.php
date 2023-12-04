@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Department;
+use App\Models\Employee;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -14,15 +16,24 @@ class DatabaseSeeder extends Seeder
     {
         // \App\Models\User::factory(10)->create();
 
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+         \App\Models\User::factory()->create([
+             'name' => 'Admin User',
+             'email' => 'admin@admin.com',
+             'password' => '1234'
+         ]);
 
         $this->call([
             CountriesTableSeeder::class,
             StatesTableSeeder::class,
             CitiesTableSeeder::class
         ]);
+
+        $departments = ['Laravel', 'VueJS', 'ReactJS'];
+
+        foreach ($departments as $department){
+            Department::create([
+                'name' => $department
+            ]);
+        }
     }
 }

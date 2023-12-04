@@ -4,15 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Department extends Model
+class Team extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name'
+        'name', 'slug'
     ];
 
     public function employees(): HasMany
@@ -20,8 +20,13 @@ class Department extends Model
         return $this->hasMany(Employee::class);
     }
 
-    public function team(): BelongsTo
+    public function departments(): HasMany
     {
-        return $this->belongsTo(Team::class);
+        return $this->hasMany(Department::class);
+    }
+
+    public function members(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class);
     }
 }

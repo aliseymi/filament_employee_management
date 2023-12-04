@@ -1741,6 +1741,7 @@ class StatesTableSeeder extends Seeder
             array('name' => "Semnan",'country_id' => 103),
             array('name' => "Sistan-e Baluchestan",'country_id' => 103),
             array('name' => "Tehran",'country_id' => 103),
+            array('name' => "Alborz",'country_id' => 103),
             array('name' => "Yazd",'country_id' => 103),
             array('name' => "Zanjan",'country_id' => 103),
             array('name' => "Babil",'country_id' => 104),

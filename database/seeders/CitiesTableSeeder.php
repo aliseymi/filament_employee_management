@@ -16,6 +16,9 @@ class CitiesTableSeeder extends Seeder
         DB::table('cities')->delete();
         $cities = array(
             array('name' => "Bombuflat",'state_id' => 1),
+            array('name' => "Vanak",'state_id' => 1726),
+            array('name' => "velenjak",'state_id' => 1726),
+            array('name' => "karaj",'state_id' => 1727),
             array('name' => "Garacharma",'state_id' => 1),
             array('name' => "Port Blair",'state_id' => 1),
             array('name' => "Rangat",'state_id' => 1),
